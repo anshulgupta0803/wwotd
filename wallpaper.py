@@ -10,12 +10,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 class WWOTD():
     def __init__(self, width=1920, height=1080):
+        self.basedir = os.path.dirname(os.path.realpath(__file__))
         self.wallpaper_url = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=-1&n=1'
         self.word_url = 'https://www.merriam-webster.com/word-of-the-day'
         self.width = width
         self.height = height
         self.boxsize = 400
-        self.image_path = os.path.abspath('./Images')
+        self.image_path = os.path.join(self.basedir, 'Images')
         if not os.path.exists(self.image_path):
             os.mkdir(self.image_path)
         if not os.path.isdir(self.image_path):
@@ -62,12 +63,18 @@ class WWOTD():
                 definition += content.contents[0]
             except AttributeError:
                 definition += content
-        bold_font = ImageFont.truetype(os.path.join(
-            'Fonts', 'PlayfairDisplay-Bold.ttf'), 40)
-        italic_font = ImageFont.truetype(os.path.join(
-            'Fonts', 'PlayfairDisplay-Italic.ttf'), 18)
-        regular_font = ImageFont.truetype(os.path.join(
-            'Fonts', 'PlayfairDisplay-Regular.ttf'), 16)
+        bold_font = ImageFont.truetype(
+            os.path.join(self.basedir,
+                         'Fonts',
+                         'PlayfairDisplay-Bold.ttf'), 40)
+        italic_font = ImageFont.truetype(
+            os.path.join(self.basedir,
+                         'Fonts',
+                         'PlayfairDisplay-Italic.ttf'), 18)
+        regular_font = ImageFont.truetype(
+            os.path.join(self.basedir,
+                         'Fonts',
+                         'PlayfairDisplay-Regular.ttf'), 16)
         word_image = Image.new(
             'RGBA', (self.width, self.height), (0, 0, 0, 0))
 
