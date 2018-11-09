@@ -43,7 +43,7 @@ class WWOTD():
             '_' + str(self.width) + 'x' + str(self.height) + '.png'
         if os.path.exists(os.path.join(self.image_path, self.image_name)):
             print('Image already downloaded')
-            return
+            raise Exception
         with open(os.path.join(self.image_path, self.image_name), 'wb') as IMG:
             IMG.write(image_data)
 
@@ -110,8 +110,6 @@ class WWOTD():
                        paragraph_height), line, font=regular_font)
             paragraph_height += line_height
 
-        if self.image_name is None:
-            self.__wallpaper()
         background_image = Image.open(
             os.path.join(self.image_path, self.image_name)).convert('RGBA')
         out = Image.alpha_composite(
@@ -119,7 +117,10 @@ class WWOTD():
         out.save(os.path.join(self.image_path, self.image_name))
 
     def set_wallpaper(self):
-        self.__wallpaper()
+        try:
+            self.__wallpaper()
+        except Exception:
+            return
         self.__word()
         command = 'gsettings set org.gnome.desktop.background picture-uri '
         file_uri = 'file://' + \
