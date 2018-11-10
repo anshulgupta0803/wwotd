@@ -3,10 +3,11 @@ Downloads the Bing image of the day and Webster's Dictionary word of the day and
 
 ## Python3 Requirements
 - bs4
-- PIL
+- Pillow
+- requests
 
 ```sh
-pip install bs4 Pillow
+pip install -r requirements.txt
 ```
 
 ## Wallpaper Resolution
