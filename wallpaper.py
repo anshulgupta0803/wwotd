@@ -25,7 +25,11 @@ class WWOTD():
         self.image_name = None
 
     def __wallpaper(self):
-        response = requests.get(self.wallpaper_url).json()
+        try:
+            response = requests.get(self.wallpaper_url).json()
+        except Exception:
+            print('Unable to connect to', self.wallpaper_url)
+            exit()
         image_url = 'https://www.bing.com' + \
             response['images'][0]['urlbase'] + '_' + \
             str(self.width) + 'x' + str(self.height) + '.jpg'
@@ -36,33 +40,47 @@ class WWOTD():
         response = requests.get(image_url)
         if not response.ok:
             print('Unable to download the image')
-            print(image_url)
-            return
+            print('Status:', response.status_code)
+            exit()
         image_data = response.content
         self.image_name = image_date + '-' + image_title + \
             '_' + str(self.width) + 'x' + str(self.height) + '.png'
         if os.path.exists(os.path.join(self.image_path, self.image_name)):
-            print('Image already downloaded')
-            raise Exception
+            os.remove(os.path.join(self.image_path, self.image_name))
         with open(os.path.join(self.image_path, self.image_name), 'wb') as IMG:
             IMG.write(image_data)
 
     def __word(self):
-        response = requests.get(self.word_url)
+        try:
+            response = requests.get(self.word_url)
+        except Exception:
+            print('Unable to connect to', self.wallpaper_url)
+            exit()
         if not response.ok:
             print('Unable to get the word of the day')
-            return
+            print('Status:', response.status_code)
+            exit()
         soup = BeautifulSoup(response.text, 'html.parser')
         word = soup.find(
             class_='word-and-pronunciation').find('h1').contents[0]
         category = soup.find(class_='main-attr').contents[0]
         pronunciation = soup.find(class_='word-syllables').contents[0]
-        definition = ''
-        for content in soup.find(class_='wod-definition-container').find('p').contents:
-            try:
-                definition += content.contents[0]
-            except AttributeError:
-                definition += content
+        definition = []
+        for content in soup.find(class_='wod-definition-container').contents:
+            d = ''
+            if content.name == 'p':
+                for c in content.contents:
+                    try:
+                        d += c.contents[0]
+                    except AttributeError:
+                        d += c
+                definition.append(d)
+            else:
+                try:
+                    if content.name == 'span':
+                        break
+                except KeyError:
+                    continue
         bold_font = ImageFont.truetype(
             os.path.join(self.basedir,
                          'Fonts',
@@ -102,13 +120,14 @@ class WWOTD():
                    (top_left[1] + 190)
                    ])
 
-        paragraph = textwrap.wrap(definition, width=50)
         paragraph_height, line_height = top_left[1] + 200, 25
-        for line in paragraph:
-            line_w, _ = draw.textsize(line, font=regular_font)
-            draw.text((top_left[0] + (self.boxsize - line_w) // 2,
-                       paragraph_height), line, font=regular_font)
-            paragraph_height += line_height
+        for d in definition:
+            paragraph = textwrap.wrap(d, width=50)
+            for line in paragraph:
+                line_w, _ = draw.textsize(line, font=regular_font)
+                draw.text((top_left[0] + (self.boxsize - line_w) // 2,
+                           paragraph_height), line, font=regular_font)
+                paragraph_height += line_height
 
         background_image = Image.open(
             os.path.join(self.image_path, self.image_name)).convert('RGBA')
@@ -117,10 +136,7 @@ class WWOTD():
         out.save(os.path.join(self.image_path, self.image_name))
 
     def set_wallpaper(self):
-        try:
-            self.__wallpaper()
-        except Exception:
-            return
+        self.__wallpaper()
         self.__word()
         command = 'gsettings set org.gnome.desktop.background picture-uri '
         file_uri = 'file://' + \
