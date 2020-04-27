@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import subprocess
 import textwrap
 
 import requests
@@ -138,12 +139,20 @@ class WWOTD():
     def set_wallpaper(self):
         self.__wallpaper()
         self.__word()
-        command = 'gsettings set org.gnome.desktop.background picture-uri '
-        file_uri = 'file://' + \
+        command = [
+            "feh",
+            "--bg-center",
             os.path.abspath(os.path.join(self.image_path, self.image_name))
-        gio_module = 'export GIO_EXTRA_MODULES=/usr/lib/x86_64-linux-gnu/gio/modules/'
-        os.system(gio_module + ' && ' + command + file_uri)
+        ]
+
+        subprocess.Popen(command)
+
+        # command = 'gsettings set org.gnome.desktop.background picture-uri '
+        # file_uri = 'file://' + \
+        #     os.path.abspath(os.path.join(self.image_path, self.image_name))
+        # gio_module = 'export GIO_EXTRA_MODULES=/usr/lib/x86_64-linux-gnu/gio/modules/'
+        # os.system(gio_module + ' && ' + command + file_uri)
 
 
 if __name__ == '__main__':
-    WWOTD(1366, 768).set_wallpaper()
+    WWOTD(1920, 1080).set_wallpaper()
